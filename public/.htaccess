@@ -1,0 +1,9 @@
+DirectoryIndex index.html
+Options -MultiViews
+RewriteEngine On
+
+# Permite abrir rutas de Expo como /iniciar-sesion y refrescarlas en Apache.
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME}.html -f
+RewriteRule ^(.+?)/?$ $1.html [L]
