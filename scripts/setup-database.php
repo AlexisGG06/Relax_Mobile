@@ -2,7 +2,10 @@
 declare(strict_types=1);
 if (PHP_SAPI !== 'cli') { http_response_code(403); exit; }
 $root = dirname(__DIR__);
-$pdo = new PDO('mysql:host=127.0.0.1;port=3307;charset=utf8mb4', getenv('RELAX_DB_ADMIN_USER') ?: 'root', getenv('RELAX_DB_ADMIN_PASSWORD') ?: '', [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
+$host = getenv('RELAX_DB_HOST') ?: '127.0.0.1';
+$port = (int)(getenv('RELAX_DB_PORT') ?: 3307);
+if ($port < 1 || $port > 65535 || !preg_match('/^[a-zA-Z0-9.:-]+$/', $host)) throw new RuntimeException('Host o puerto inválido.');
+$pdo = new PDO("mysql:host=$host;port=$port;charset=utf8mb4", getenv('RELAX_DB_ADMIN_USER') ?: 'root', getenv('RELAX_DB_ADMIN_PASSWORD') ?: '', [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
 $pdo->exec('CREATE DATABASE IF NOT EXISTS relax CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci');
 $pdo->exec('USE relax');
 $count = (int)$pdo->query('SELECT COUNT(*) FROM information_schema.tables WHERE table_schema="relax"')->fetchColumn();
@@ -19,7 +22,7 @@ if (!is_file($root . '/api/config.local.php')) {
     $pdo->exec("CREATE USER IF NOT EXISTS 'relax_app'@'127.0.0.1' IDENTIFIED BY '$secret'");
     $pdo->exec("ALTER USER 'relax_app'@'127.0.0.1' IDENTIFIED BY '$secret'");
     $pdo->exec("GRANT SELECT, INSERT, UPDATE, DELETE ON relax.* TO 'relax_app'@'127.0.0.1'");
-    file_put_contents($root . '/api/config.local.php', '<?php return ' . var_export(['host'=>'127.0.0.1','port'=>3307,'database'=>'relax','user'=>'relax_app','password'=>$secret], true) . ';');
+    file_put_contents($root . '/api/config.local.php', '<?php return ' . var_export(['host'=>$host,'port'=>$port,'database'=>'relax','user'=>'relax_app','password'=>$secret], true) . ';');
 }
 if (!(int)$pdo->query('SELECT COUNT(*) FROM usuarios WHERE rol_id=1')->fetchColumn()) {
     $password = bin2hex(random_bytes(10)) . '!aA';

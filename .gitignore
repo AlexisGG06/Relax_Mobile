@@ -46,3 +46,4 @@ example
 /api/config.local.php
 /api/admin-inicial.local.txt
 /database/seed.local.json
+/entregas/

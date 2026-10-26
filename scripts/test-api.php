@@ -54,9 +54,16 @@ try {
     [$status,$other]=callApi('metodos',null,$token2); check(!$other['metodos'],'Aislamiento de métodos');
     [$status]=callApi('viaje',['operacion'=>'reservar','elemento'=>$h],$token2); check($status===422,'No se puede usar el método de otro cliente');
     [$status,$other]=callApi('viaje',null,$token2); check($other['hospedaje']===null,'Reserva ajena rechazada sin escritura parcial');
-    $adminText=file_get_contents(dirname(__DIR__).'/api/admin-inicial.local.txt');
-    preg_match('/Correo: (.+)/',$adminText,$email); preg_match('/Contraseña inicial: (.+)/u',$adminText,$pw);
-    [$status,$admin]=callApi('login',['correo'=>trim($email[1]),'contrasena'=>trim($pw[1])]); check($status===200,'Login administrador');
+    $adminEmail=getenv('RELAX_TEST_ADMIN_EMAIL');
+    $adminPassword=getenv('RELAX_TEST_ADMIN_PASSWORD');
+    $adminFile=dirname(__DIR__).'/api/admin-inicial.local.txt';
+    if((!$adminEmail || !$adminPassword) && is_file($adminFile)) {
+        $adminText=file_get_contents($adminFile);
+        preg_match('/Correo: (.+)/',$adminText,$email); preg_match('/Contraseña inicial: (.+)/u',$adminText,$pw);
+        $adminEmail=trim($email[1]); $adminPassword=trim($pw[1]);
+    }
+    if(!$adminEmail || !$adminPassword) throw new RuntimeException('Para las pruebas de una copia importada, definir RELAX_TEST_ADMIN_EMAIL y RELAX_TEST_ADMIN_PASSWORD.');
+    [$status,$admin]=callApi('login',['correo'=>$adminEmail,'contrasena'=>$adminPassword]); check($status===200,'Login administrador');
     $business=['nombre'=>'Empresa prueba','correo'=>"empresa-$tag@relax.invalid",'contrasena'=>'Prueba123!','negocio'=>'Negocio de integración'];
     [$status,$created]=callApi('crear_empresa',$business,$admin['token']); $ids[]=(int)($created['usuario']['id']??0); check($status===201 && $created['usuario']['rol']==='empresario','Solo administrador da de alta empresa');
     [$status,$company]=callApi('login',$business); check($status===200 && $company['usuario']['rol']==='empresario','Acceso empresario desde sus credenciales');

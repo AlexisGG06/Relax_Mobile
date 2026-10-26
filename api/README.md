@@ -67,3 +67,5 @@ npm.cmd run export:xampp
 El instalador no borra tablas y omite importar el esquema si la base ya contiene tablas. El catálogo se importa una sola vez con marca de importación. En una instalación distinta, configurar `RELAX_DB_ADMIN_USER` y `RELAX_DB_ADMIN_PASSWORD` para el instalador si root requiere contraseña. El usuario de ejecución `relax_app` solo recibe SELECT/INSERT/UPDATE/DELETE sobre `relax`; su configuración se genera en el archivo privado.
 
 Las pruebas usan cuentas temporales propias, comprueban permisos, sesiones, persistencia, precios y aislamiento, y eliminan sus datos al terminar. No sustituyen pruebas visuales ni pruebas físicas de Android/iOS.
+
+En una copia SQL importada no se entrega `admin-inicial.local.txt`. Para ejecutar `scripts/test-api.php` allí, definir `RELAX_TEST_ADMIN_EMAIL` y `RELAX_TEST_ADMIN_PASSWORD` con el acceso del administrador importado y quitarlas de la consola al terminar. No se requieren para usar normalmente la aplicación.
